@@ -60,6 +60,9 @@ var option_obfs = ["plain", "http_simple", "http_post", "tls1.2_ticket_auth"];
 var option_v2enc = [["none", "不加密"], ["auto", "自动"], ["aes-128-cfb", "aes-128-cfb"], ["aes-128-gcm", "aes-128-gcm"], ["chacha20-poly1305", "chacha20-poly1305"]];
 var option_headtcp = [["none", "不伪装"], ["http", "伪装http"]];
 var option_headkcp = [["none", "不伪装"], ["srtp", "伪装视频通话(srtp)"], ["utp", "伪装BT下载(uTP)"], ["wechat-video", "伪装微信视频通话"]];
+var heart_count = 1;
+const pattern=/[`~!@#$^&*()=|{}':;'\\\[\]\.<>\/?~！@#￥……&*（）——|{}%【】'；：""'。，、？\s]/g;
+
 
 function init() {
 	show_menu(menu_hook);
@@ -76,6 +79,43 @@ function refresh_dbss() {
 			generate_node_info();
 		}
 	});
+}
+function get_heart_beat() {
+	$.ajax({
+		type: "GET",
+		url: "/_api/ss_heart_beat",
+		dataType: "json",
+		async: false,
+		success: function(data) {
+			heart_beat = data.result[0]["ss_heart_beat"];
+			if(heart_beat == "1"){
+				if (heart_count == "1"){
+					var dbus_post = {};
+					dbus_post["ss_heart_beat"] = "0";
+					push_data("dummy_script.sh", "", dbus_post, "2");
+					return true;
+				}else{
+					var dbus_post = {};
+					dbus_post["ss_heart_beat"] = "0";
+					push_data("dummy_script.sh", "", dbus_post, "2");
+					require(['/res/layer/layer.js'], function(layer) {
+						layer.confirm('<li>科学上网插件页面需要刷新！</li><br /><li>由于故障转移功能已经在后台切换了节点，为了保证页面显示正确配置！需要刷新此页面！</li><br /><li>确定现在刷新吗？</li>', {
+							time: 3e4,
+							shade: 0.8
+						}, function(index) {
+							layer.close(index);
+							refreshpage();
+						}, function(index) {
+							layer.close(index);
+							return false;
+						});
+					});
+				}
+			}
+		}
+	});
+	heart_count++
+	setTimeout("get_heart_beat();", 10000);
 }
 function get_dbus_data() {
 	$.ajax({
@@ -98,6 +138,7 @@ function get_dbus_data() {
 			}else{
 				get_ss_status_front();
 			}
+			get_heart_beat();
 			//console.log(productid);
 		},
 		error: function(XmlHttpRequest, textStatus, errorThrown){
@@ -221,7 +262,7 @@ function save() {
 	E("ss_state2").innerHTML = "国外连接 - " + "Waiting...";
 	E("ss_state3").innerHTML = "国内连接 - " + "Waiting...";
 	//key define
-	var params_input = ["ss_failover_s1", "ss_failover_s2_1", "ss_failover_s2_2", "ss_failover_s3_1", "ss_failover_s3_2", "ss_failover_s4_1", "ss_failover_s4_2", "ss_failover_s4_3", "ss_failover_s5", "ss_basic_row", "ss_basic_ping_node", "ss_basic_ping_method", "ss_dns_china", "ss_dns_china_user", "ss_foreign_dns", "ss_dns2socks_user", "ss_chinadns_user", "ss_chinadns1_user", "ss_sstunnel_user", "ss_direct_user", "ss_game2_dns_foreign", "ss_game2_dns2ss_user", "ss_basic_kcp_lserver", "ss_basic_kcp_lport", "ss_basic_kcp_server", "ss_basic_kcp_port", "ss_basic_kcp_parameter", "ss_basic_rule_update", "ss_basic_rule_update_time", "ssr_subscribe_mode", "ssr_subscribe_obfspara", "ssr_subscribe_obfspara_val", "ss_basic_online_links_goss", "ss_basic_node_update", "ss_basic_node_update_day", "ss_basic_node_update_hr", "ss_base64_links", "ss_acl_default_port", "ss_acl_default_mode", "ss_basic_kcp_method", "ss_basic_kcp_password", "ss_basic_kcp_mode", "ss_basic_kcp_encrypt", "ss_basic_kcp_mtu", "ss_basic_kcp_sndwnd", "ss_basic_kcp_rcvwnd", "ss_basic_kcp_conn", "ss_basic_kcp_extra", "ss_basic_udp_software", "ss_basic_udp_node", "ss_basic_udpv1_lserver", "ss_basic_udpv1_lport", "ss_basic_udpv1_rserver", "ss_basic_udpv1_rport", "ss_basic_udpv1_password", "ss_basic_udpv1_mode", "ss_basic_udpv1_duplicate_nu", "ss_basic_udpv1_duplicate_time", "ss_basic_udpv1_jitter", "ss_basic_udpv1_report", "ss_basic_udpv1_drop", "ss_basic_udpv2_lserver", "ss_basic_udpv2_lport", "ss_basic_udpv2_rserver", "ss_basic_udpv2_rport", "ss_basic_udpv2_password", "ss_basic_udpv2_fec", "ss_basic_udpv2_timeout", "ss_basic_udpv2_mode", "ss_basic_udpv2_report", "ss_basic_udpv2_mtu", "ss_basic_udpv2_jitter", "ss_basic_udpv2_interval", "ss_basic_udpv2_drop", "ss_basic_udpv2_other", "ss_basic_udp2raw_lserver", "ss_basic_udp2raw_lport", "ss_basic_udp2raw_rserver", "ss_basic_udp2raw_rport", "ss_basic_udp2raw_password", "ss_basic_udp2raw_rawmode", "ss_basic_udp2raw_ciphermode", "ss_basic_udp2raw_authmode", "ss_basic_udp2raw_lowerlevel", "ss_basic_udp2raw_other", "ss_basic_udp_upstream_mtu", "ss_basic_udp_upstream_mtu_value", "ss_reboot_check", "ss_basic_week", "ss_basic_day", "ss_basic_inter_min", "ss_basic_inter_hour", "ss_basic_inter_day", "ss_basic_inter_pre", "ss_basic_time_hour", "ss_basic_time_min", "ss_basic_tri_reboot_time", "ss_basic_dnsmasq_fastlookup", "ss_basic_server_resolver", "ss_basic_server_resolver_user"];
+	var params_input = ["ss_failover_s1", "ss_failover_s2_1", "ss_failover_s2_2", "ss_failover_s3_1", "ss_failover_s3_2", "ss_failover_s4_1", "ss_failover_s4_2", "ss_failover_s4_3", "ss_failover_s5", "ss_basic_interval", "ss_basic_row", "ss_basic_ping_node", "ss_basic_ping_method", "ss_dns_china", "ss_dns_china_user", "ss_foreign_dns", "ss_dns2socks_user", "ss_chinadns_user", "ss_chinadns1_user", "ss_sstunnel_user", "ss_direct_user", "ss_game2_dns_foreign", "ss_game2_dns2ss_user", "ss_basic_kcp_lserver", "ss_basic_kcp_lport", "ss_basic_kcp_server", "ss_basic_kcp_port", "ss_basic_kcp_parameter", "ss_basic_rule_update", "ss_basic_rule_update_time", "ssr_subscribe_mode", "ssr_subscribe_obfspara", "ssr_subscribe_obfspara_val", "ss_basic_online_links_goss", "ss_basic_node_update", "ss_basic_node_update_day", "ss_basic_node_update_hr", "ss_basic_exclude", "ss_basic_include", "ss_base64_links", "ss_acl_default_port", "ss_acl_default_mode", "ss_basic_kcp_method", "ss_basic_kcp_password", "ss_basic_kcp_mode", "ss_basic_kcp_encrypt", "ss_basic_kcp_mtu", "ss_basic_kcp_sndwnd", "ss_basic_kcp_rcvwnd", "ss_basic_kcp_conn", "ss_basic_kcp_extra", "ss_basic_udp_software", "ss_basic_udp_node", "ss_basic_udpv1_lserver", "ss_basic_udpv1_lport", "ss_basic_udpv1_rserver", "ss_basic_udpv1_rport", "ss_basic_udpv1_password", "ss_basic_udpv1_mode", "ss_basic_udpv1_duplicate_nu", "ss_basic_udpv1_duplicate_time", "ss_basic_udpv1_jitter", "ss_basic_udpv1_report", "ss_basic_udpv1_drop", "ss_basic_udpv2_lserver", "ss_basic_udpv2_lport", "ss_basic_udpv2_rserver", "ss_basic_udpv2_rport", "ss_basic_udpv2_password", "ss_basic_udpv2_fec", "ss_basic_udpv2_timeout", "ss_basic_udpv2_mode", "ss_basic_udpv2_report", "ss_basic_udpv2_mtu", "ss_basic_udpv2_jitter", "ss_basic_udpv2_interval", "ss_basic_udpv2_drop", "ss_basic_udpv2_other", "ss_basic_udp2raw_lserver", "ss_basic_udp2raw_lport", "ss_basic_udp2raw_rserver", "ss_basic_udp2raw_rport", "ss_basic_udp2raw_password", "ss_basic_udp2raw_rawmode", "ss_basic_udp2raw_ciphermode", "ss_basic_udp2raw_authmode", "ss_basic_udp2raw_lowerlevel", "ss_basic_udp2raw_other", "ss_basic_udp_upstream_mtu", "ss_basic_udp_upstream_mtu_value", "ss_reboot_check", "ss_basic_week", "ss_basic_day", "ss_basic_inter_min", "ss_basic_inter_hour", "ss_basic_inter_day", "ss_basic_inter_pre", "ss_basic_time_hour", "ss_basic_time_min", "ss_basic_tri_reboot_time", "ss_basic_server_resolver", "ss_basic_server_resolver_user"];
 	var params_check = ["ss_failover_enable", "ss_failover_c1", "ss_failover_c2", "ss_failover_c3", "ss_basic_tablet", "ss_basic_dragable", "ss_basic_qrcode", "ss_basic_enable", "ss_basic_gfwlist_update", "ss_basic_tfo", "ss_basic_tnd", "ss_basic_chnroute_update", "ss_basic_cdn_update", "ss_basic_kcp_nocomp", "ss_basic_udp_boost_enable", "ss_basic_udpv1_disable_filter", "ss_basic_udpv2_disableobscure", "ss_basic_udpv2_disablechecksum", "ss_basic_udp2raw_boost_enable", "ss_basic_udp2raw_a", "ss_basic_udp2raw_keeprule", "ss_basic_dns_hijack", "ss_basic_mcore"];
 	var params_base64_a = ["ss_dnsmasq", "ss_wan_white_ip", "ss_wan_white_domain", "ss_wan_black_ip", "ss_wan_black_domain", "ss_online_links"];
 	var params_base64_b = ["ss_basic_custom"];
@@ -232,6 +273,8 @@ function save() {
 			dbus[params_input[i]] = E(params_input[i]).value;
 		}
 	}
+	dbus["ss_basic_exclude"] = E("ss_basic_exclude").value.replace(pattern,"") || "";
+	dbus["ss_basic_include"] = E("ss_basic_include").value.replace(pattern,"") || "";
 	// collect data from checkbox
 	for (var i = 0; i < params_check.length; i++) {
 		dbus[params_check[i]] = E(params_check[i]).checked ? '1' : '0';
@@ -385,6 +428,9 @@ function push_data(script, arg, obj, flag){
 			if(response.result == id){
 				if(flag && flag == "1"){
 					refreshpage();
+				}else if(flag && flag == "2"){
+					//continue;
+					//do nothing
 				}else{
 					get_realtime_log();
 				}
@@ -565,8 +611,7 @@ function verifyFields(r) {
 		var dbus_post = {};
 		dbus_post[trid] = E(trid).checked ? '1' : '0';
 		push_data("dummy_script.sh", "", dbus_post, "1");
-	}
-	
+	}	
 	refresh_acl_table();
 }
 function update_visibility() {
@@ -2157,7 +2202,11 @@ function get_ss_status_front() {
 			}
 		}
 	});
-	refreshRate = Math.floor(Math.random() * 4000) + 4000;
+	//refreshRate = Math.floor(Math.random() * 4000) + 4000;
+	//1: 2-3s, 2:4-7s, 3:8-15s, 4:16-31s, 5:32-63s
+	var time_plus = Math.pow("2", String(db_ss['ss_basic_interval']||"2")) * 1000;
+	var time_base = time_plus - 1000;
+	refreshRate = Math.floor(Math.random() * time_base) + time_plus ;
 	setTimeout("get_ss_status_front();", refreshRate);
 }
 function get_ss_status_back() {
@@ -2760,6 +2809,8 @@ function save_online_nodes(action) {
 	dbus_post["ss_basic_node_update"] = E("ss_basic_node_update").value;
 	dbus_post["ss_basic_node_update_day"] = E("ss_basic_node_update_day").value;
 	dbus_post["ss_basic_node_update_hr"] = E("ss_basic_node_update_hr").value;
+	dbus_post["ss_basic_exclude"] = E("ss_basic_exclude").value.replace(pattern,"") || "";
+	dbus_post["ss_basic_include"] = E("ss_basic_include").value.replace(pattern,"") || "";
 	dbus_post["ss_basic_node_update"] = E("ss_basic_node_update").value;
 	dbus_post["ss_base64_links"] = E("ss_base64_links").value;
 	push_data("ss_online_update.sh", action,  dbus_post);
@@ -2810,7 +2861,7 @@ function set_cron(action) {
 function save_failover() {
 	var dbus_post = {};
 		db_ss["ss_basic_action"] = "19";
-	var fov_inp = ["ss_failover_s1", "ss_failover_s2_1", "ss_failover_s2_2", "ss_failover_s3_1", "ss_failover_s3_2", "ss_failover_s4_1", "ss_failover_s4_2", "ss_failover_s4_3", "ss_failover_s5"];
+	var fov_inp = ["ss_failover_s1", "ss_failover_s2_1", "ss_failover_s2_2", "ss_failover_s3_1", "ss_failover_s3_2", "ss_failover_s4_1", "ss_failover_s4_2", "ss_failover_s4_3", "ss_failover_s5", "ss_basic_interval"];
 	var fov_chk = ["ss_failover_enable", "ss_failover_c1", "ss_failover_c2", "ss_failover_c3"];
 	for (var i = 0; i < fov_inp.length; i++) {
 		dbus_post[fov_inp[i]] = E(fov_inp[i]).value;
@@ -2850,13 +2901,13 @@ function save_failover() {
 		</td>
 		<td valign="top">
 			<div id="tabMenu" class="submenuBlock"></div>
-			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0" style="display: block;">
 				<tr>
-					<td bgcolor="#4D595D" align="left" valign="top">
+					<td align="left" valign="top">
 						<div>
 							<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3" class="FormTitle" id="FormTitle">
 								<tr>
-									<td colspan="3" valign="top">
+									<td bgcolor="#4D595D" colspan="3" valign="top">
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><% nvram_get("productid"); %> 科学上网插件</div>
 										<div style="float:right; width:15px; height:25px;margin-top:-20px">
@@ -3104,6 +3155,7 @@ function save_failover() {
 													var fa3_2 = ["100", "150", "200", "250", "300", "350", "400", "450", "500", "1000"];
 													var fa4_1 = [["0", "关闭插件"], ["1", "重启插件"], ["2", "切换到"]];
 													var fa4_2 = [["1", "备用节点"], ["2", "下个节点"]];
+													var fa5 = [["1", "2s - 3s"], ["2", "4s - 7s"], ["3", "8s - 15s"], ["4", "16s - 31s"], ["5", "32s - 63s"]];
 													$('#table_failover').forms([
 														{ title: '故障转移开关', id:'ss_failover_enable',type:'checkbox', func:'v', value:false},
 														{ title: '故障转移设置', rid:'failover_settings_1', multi: [
@@ -3140,6 +3192,10 @@ function save_failover() {
 															{ suffix:'<lable id="ss_failover_text_1">&nbsp;，即在节点列表内顺序循环。&nbsp;</lable>' },
 															{ suffix:'</div>' },
 														]},
+														{ title: '状态检测时间间隔', rid:'interval_settings', multi: [
+															{ id:'ss_basic_interval', type:'select', style:'width:auto',options:fa5, value:'2'},
+															{ suffix:'<small>&nbsp;默认：4 - 7s</small>' },
+														]},
 														{ title: '历史记录保存数量', rid:'failover_settings_2', multi: [
 															{ suffix:'<lable>最多保留&nbsp;</lable>' },
 															{ id:'ss_failover_s5', type:'select', style:'width:auto',options:["1000", "2000", "3000", "4000"], value:'2000'},
@@ -3161,8 +3217,8 @@ function save_failover() {
 										<div id="tablet_3" style="display: none;">
 											<table id="table_dns" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 												<script type="text/javascript">
-													var option_dnsc = [["1", "运营商DNS【自动获取】"], ["2", "阿里DNS1【223.5.5.5】"], ["3", "阿里DNS2【223.6.6.6】"], ["4", "114DNS1【114.114.114.114】"], ["5", "114DNS2【114.114.115.115】"], ["6", "cnnic DNS1【1.2.4.8】"], ["7", "cnnic DNS2【210.2.4.8】"], ["8", "oneDNS1【117.50.11.11】"], ["9", "oneDNS2【117.50.11.22】"], ["10", "百度DNS【180.76.76.76】"], ["11", "DNSpod DNS【119.29.29.29】"], ["12", "自定义DNS"]];
-													var option_dnsf = [["3", "dns2socks"], ["4", "ss-tunnel"], ["1", "cdns"], ["5", "chinadns1"], ["2", "chinadns2"], ["6", "https_dns_proxy"], ["7", "v2ray_dns"], ["8", "直连"]];
+													var option_dnsc = [["1", "运营商DNS【自动获取】"], ["2", "阿里DNS1【223.5.5.5】"], ["3", "阿里DNS2【223.6.6.6】"], ["4", "114DNS1【114.114.114.114】"], ["5", "114DNS2【114.114.115.115】"], ["6", "cnnic DNS1【1.2.4.8】"], ["7", "cnnic DNS2【210.2.4.8】"], ["8", "oneDNS1【117.50.11.11】"], ["9", "oneDNS2【117.50.11.22】"], ["10", "百度DNS【180.76.76.76】"], ["11", "DNSpod DNS【119.29.29.29】"], ["13", "SmartDNS"], ["12", "自定义DNS"]];
+													var option_dnsf = [["3", "dns2socks"], ["4", "ss-tunnel"], ["1", "cdns"], ["5", "chinadns1"], ["2", "chinadns2"], ["10", "chinadns-ng"], ["6", "https_dns_proxy"], ["7", "v2ray_dns"], ["9", "SmartDNS"], ["8", "直连"]];
 													var option_dnsr = [["1", "运营商DNS【自动获取】"], ["2", "阿里DNS1【223.5.5.5】"], ["3", "阿里DNS2【223.6.6.6】"], ["4", "114DNS1【114.114.114.114】"], ["5", "114DNS2【114.114.115.115】"], ["6", "cnnic DNS1【1.2.4.8】"], ["7", "cnnic DNS2【210.2.4.8】"], ["8", "oneDNS1【117.50.11.11】"], ["9", "oneDNS2【117.50.11.22】"], ["10", "百度DNS【180.76.76.76】"], ["11", "DNSpod DNS【119.29.29.29】"], ["13", "google DNS1【8.8.8.8】"], ["14", "google DNS2【8.8.4.4】"], ["15", "IBM DNS【9.9.9.9】"], ["12", "自定义DNS"]];
 													var ph1 = "需端口号如：8.8.8.8:53"
 													var ph2 = "需端口号如：8.8.8.8#53"
@@ -3449,6 +3505,8 @@ function save_failover() {
 														option_nodeh.push(_tmp);
 													}
 													var ph1 = "填入需要订阅的地址，多个地址分行填写";
+													var ph2 = "多个关键词用英文逗号分隔，如：测试,过期,剩余,曼谷,M247,D01,硅谷";
+													var ph3 = "多个关键词用英文逗号分隔，如：香港,深圳,NF,BGP";
 													$('#table_subscribe').forms([
 														{ title: 'SSR/v2ray订阅设置', thead:'1'},
 														{ title: '订阅地址管理（支持SSR/v2ray）', id:'ss_online_links', type:'textarea', rows:'8', ph:ph1},
@@ -3463,6 +3521,8 @@ function save_failover() {
 															{ id:'ss_basic_node_update_day', type:'select', style:'width:auto', options:option_noded, value:'6'},
 															{ id:'ss_basic_node_update_hr', type:'select', style:'width:auto', options:option_nodeh, value:'3'},
 														]},
+														{ title: '[排除]关键词（含关键词的节点不会添加）', rid:'ss_basic_exclude_tr', id:'ss_basic_exclude', type:'text', hint:'110', maxlen:'300', style:'width:95%', ph:ph2},
+														{ title: '[包括]关键词（含关键词的节点才会添加）', rid:'ss_basic_include_tr', id:'ss_basic_include', type:'text', hint:'111', maxlen:'300', style:'width:95%', ph:ph3},
 														{ title: '删除节点', multi: [
 															{ suffix:'<a type="button" class="ss_btn" style="cursor:pointer" onclick="get_online_nodes(0)">删除全部节点</a>'},
 															{ suffix:'&nbsp;<a type="button" class="ss_btn" style="cursor:pointer" onclick="get_online_nodes(1)">删除全部订阅节点</a>'},
@@ -3533,7 +3593,6 @@ function save_failover() {
 													}
 													var option_trit = [["0", "关闭"], ["2", "每隔2分钟"], ["5", "每隔5分钟"], ["10", "每隔10分钟"], ["15", "每隔15分钟"], ["20", "每隔20分钟"], ["25", "每隔25分钟"], ["30", "每隔30分钟"]];
 													var pingm = [["1", "ping(1次/节点)"], ["2", "ping(5次/节点)"], ["3", "ping(10次/节点)"], ["4", "ping(20次/节点)"]];
-													var option_dnsfast = [["0", "【0】不替换"], ["1", "【1】插件开启后替换，插件关闭后恢复原版dnsmasq"], ["2", "【2】在用到cdn.conf时替换，插件关闭后恢复原版dnsmasq"], ["3", "【3】插件开启后替换，插件关闭后保持替换，不恢复原版dnsmasq"]]
 													$('#table_addons').forms([
 														{ td: '<tr><td class="smth" style="font-weight: bold;" colspan="2">备份/恢复</td></tr>'},
 														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;导出SS配置', hint:'24', multi: [
@@ -3580,9 +3639,8 @@ function save_failover() {
 														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;设置节点列表为默认标签页', id:'ss_basic_tablet', func:'v', type:'checkbox', value:false},
 														{ td: '<tr><td class="smth" style="font-weight: bold;" colspan="2">性能优化</td></tr>'},
 														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;ss/ssr 开启多核心支持', id:'ss_basic_mcore', help:'108', type:'checkbox', value:true},
-														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;ss-libev 开启tcp fast open', id:'ss_basic_tfo', type:'checkbox', value:false},
+														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;ss-libev / v2ray 开启tcp fast open', id:'ss_basic_tfo', type:'checkbox', value:false},
 														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;ss-libev 开启TCP_NODELAY', id:'ss_basic_tnd', type:'checkbox', value:false},
-														{ title: '&nbsp;&nbsp;&nbsp;&nbsp;替换为dnsmasq-fastlookup', id:'ss_basic_dnsmasq_fastlookup', help:'105', type:'select', style:'width:auto', options:option_dnsfast},
 													]);
 												</script> 
 											</table>
